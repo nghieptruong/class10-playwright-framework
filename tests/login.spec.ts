@@ -1,39 +1,36 @@
 import test, { expect } from "@playwright/test";
+import { HomePage } from "../pages/HomePage";
+import { LoginPage } from "../pages/LoginPage";
+import { CommonDialog } from "../pages/dialog/CommonDialog";
 
 test('Verify Valid Login Successfully', async ({ page }) => {
+
+    const homePage = new HomePage(page);
+    const loginPage = new LoginPage(page);
+    const commonDlg = new CommonDialog(page);
+
     //Step 1: Go to https://demo1.cybersoft.edu.vn/
-    await page.goto("https://demo1.cybersoft.edu.vn/");
+    await homePage.goTo("https://demo1.cybersoft.edu.vn/");
 
     //Step 2: Click 'Đăng Nhap' link on the top right
-    // let lnkLogin = page.getByRole('link', { name: 'Đăng Nhập' });
-    let lnkLogin = page.locator("//a[h3[text()='Đăng Nhập']]");
-    await lnkLogin.click({timeout: 20000});
+    await homePage.getTopBarNavigation().navigateLoginPage();
 
     //Step 3: Enter account
-    // let txtAccount = page.getByRole('textbox', { name: 'Tài Khoản' });
-    let txtAccount = page.locator("#taiKhoan");
-    await txtAccount.fill('85b91d34-29a4-4905-9e5b-9bed31372d6c');
-    
     //Step 4: Enter password
-    // let txtPassword = page.getByRole('textbox', { name: 'Mật Khẩu' });
-    let txtPassword = page.locator("#matKhau");
-    await txtPassword.fill('Test123456@');
-
     //Step 5: Click 'Dang Nhap' button
-    // let btnLogin = page.getByRole('button', { name: 'Đăng nhập' });
-    let btnLogin = page.locator("//button[span[text()='Đăng nhập']]");
-    await btnLogin.click();
+    await loginPage.login('85b91d34-29a4-4905-9e5b-9bed31372d6c', 'Test123456@');
 
     //Step 6: Verify user login successfully
     //VP1: Check 'Dang Nhap Thanh Cong' message display
-    let lblLoginMsgSuccessful = page.getByRole('heading', { name: 'Đăng nhập thành công' });
-    await expect(lblLoginMsgSuccessful).toBeVisible();
+    let loginMsg = await commonDlg.getTextMessage();
+    expect(loginMsg).toEqual("Đăng nhập thành công");
    
     //VP2: Check 'Dang xuat' link display
-    let lnkLogout = page.getByRole('link', { name: 'Đăng xuất' });
-    await expect(lnkLogout).toBeVisible();
+    let isDisplay = await homePage.getTopBarNavigation().isLogoutLinkDisplayed();
+    expect(isDisplay).toBeTruthy();
 
     //VP3: Check user profile display on the top right
-    let lblProfileName = page.getByRole('link', { name: 'Avatar John Johnson' });
-    await expect(lblProfileName).toBeVisible(); 
+    let name = await homePage.getTopBarNavigation().getProfileName();
+    expect(name).toEqual("John Johnson");
+
 })
